@@ -1,65 +1,197 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import Link from 'next/link'
+import { useEffect, useRef, useState } from 'react'
+import { ROTATING_WORDS, ROTATE_INTERVAL_MS } from '@/types'
+
+export default function HomePage() {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const [exitIndex, setExitIndex] = useState<number | null>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setActiveIndex((prev) => {
+        const next = (prev + 1) % ROTATING_WORDS.length
+        setExitIndex(prev)
+        setTimeout(() => setExitIndex(null), 600)
+        return next
+      })
+    }, ROTATE_INTERVAL_MS)
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, [])
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main style={{
+      minHeight: '100vh',
+      background: '#fbfbfd',
+      color: '#1d1d1f',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro", "Helvetica Neue", "Inter", system-ui, sans-serif',
+      WebkitFontSmoothing: 'antialiased',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      {/* nav */}
+      <nav style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: '18px 32px',
+        backdropFilter: 'blur(20px)',
+        background: 'rgba(251,251,253,0.8)',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <Link href="/" style={{
+          fontSize: 21,
+          fontWeight: 600,
+          letterSpacing: '-0.5px',
+          color: '#1d1d1f',
+          textDecoration: 'none',
+        }}>
+          NiEL
+        </Link>
+        <div style={{ display: 'flex', gap: 28, fontSize: 14 }}>
+          <Link href="/pricing" style={{ color: '#1d1d1f', textDecoration: 'none', opacity: 0.85 }}>Pricing</Link>
+          <Link href="/login" style={{ color: '#1d1d1f', textDecoration: 'none', opacity: 0.85 }}>Log in</Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </nav>
+
+      {/* hero */}
+      <section style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+        padding: '60px 24px 100px',
+      }}>
+        {/* HUGE ROTATING WORD */}
+        <div style={{
+          height: 'clamp(96px, 18vw, 200px)',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 0 12px',
+          overflow: 'hidden',
+          position: 'relative',
+        }}>
+          <div style={{ position: 'relative', display: 'inline-block', width: '100%', height: '100%' }}>
+            {ROTATING_WORDS.map((word, i) => {
+              const isActive = i === activeIndex
+              const isExiting = i === exitIndex
+              let translateY = 40
+              let opacity = 0
+              if (isActive) { translateY = 0; opacity = 1 }
+              if (isExiting) { translateY = -40; opacity = 0 }
+              return (
+                <span
+                  key={word}
+                  style={{
+                    display: 'inline-block',
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: `translate(-50%, -50%) translateY(${translateY}px)`,
+                    opacity,
+                    transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                    whiteSpace: 'nowrap',
+                    fontSize: 'clamp(80px, 16vw, 168px)',
+                    fontWeight: 600,
+                    letterSpacing: '-5px',
+                    lineHeight: 1,
+                    background: 'linear-gradient(135deg, #185FA5 0%, #2A7DC8 50%, #5BA3E0 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}
+                >
+                  {word}
+                </span>
+              )
+            })}
+          </div>
         </div>
-      </main>
-    </div>
-  );
+
+        <h2 style={{
+          fontSize: 'clamp(28px, 5vw, 44px)',
+          fontWeight: 600,
+          margin: '0 0 14px',
+          color: '#1d1d1f',
+          lineHeight: 1.1,
+          letterSpacing: '-1.5px',
+        }}>
+          Built for you.
+        </h2>
+
+        <p style={{
+          fontSize: 19,
+          color: '#1d1d1f',
+          opacity: 0.7,
+          maxWidth: 520,
+          margin: '0 0 40px',
+          lineHeight: 1.4,
+          fontWeight: 400,
+          letterSpacing: '-0.2px',
+        }}>
+          Malaysian tuition platform. Listings, websites, daily logs, monthly reports.
+        </p>
+
+        <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center' }}>
+          <Link href="/feed" style={{
+            background: '#0071e3',
+            color: 'white',
+            padding: '12px 22px',
+            borderRadius: 980,
+            textDecoration: 'none',
+            fontWeight: 400,
+            fontSize: 16,
+            letterSpacing: '-0.2px',
+            minWidth: 130,
+            textAlign: 'center',
+            display: 'inline-block',
+          }}>
+            Browse tuition
+          </Link>
+          <Link href="/signup" style={{
+            color: '#0071e3',
+            padding: '12px 8px',
+            textDecoration: 'none',
+            fontWeight: 400,
+            fontSize: 16,
+            letterSpacing: '-0.2px',
+            display: 'inline-block',
+          }}>
+            List your centre &rsaquo;
+          </Link>
+        </div>
+      </section>
+
+      {/* footer */}
+      <footer style={{
+        padding: '16px 32px',
+        fontSize: 12,
+        color: '#6e6e73',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 12,
+        borderTop: '0.5px solid rgba(0,0,0,0.08)',
+      }}>
+        <span>NiEL · Malaysia</span>
+        <div style={{ display: 'flex', gap: 18 }}>
+          <Link href="/how" style={{ color: '#6e6e73', textDecoration: 'none' }}>How it works</Link>
+          <Link href="/about" style={{ color: '#6e6e73', textDecoration: 'none' }}>About</Link>
+          <Link href="/privacy" style={{ color: '#6e6e73', textDecoration: 'none' }}>Privacy</Link>
+          <Link href="/terms" style={{ color: '#6e6e73', textDecoration: 'none' }}>Terms</Link>
+        </div>
+      </footer>
+    </main>
+  )
 }
